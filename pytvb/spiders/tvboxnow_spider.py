@@ -32,6 +32,7 @@ class LoginSpider(BaseSpider):
 
     def parse81(self, response):
         open('forum-8-1', 'wb').write(response.body)
+        d = open('debug', 'w')
         #xpath_row = "//table[@class='datatable']/tbody[@id]/tr"
         #xpath_title = "//table[@class='datatable']/tbody[@id]/tr/th[@class='subject hot']/span[@id]/a/text()"
         #xpath_author ="//table[@class='datatable']/tbody[@id]/tr/td[@class='author']/cite/a/text()"
@@ -40,6 +41,9 @@ class LoginSpider(BaseSpider):
         entries = response.xpath("//table[@class='datatable']/tbody[@id]/tr")
         threads = []
         for entry in entries:
+            #import pdb
+            #pdb.set_trace()
+            item = Scrapy81Item()
             title_row = entry.xpath("th[@class='subject hot']/span[@id]/a/text()").extract()
             author = entry.xpath("td[@class='author']/cite/a/text()").extract()
             date = entry.xpath("td[@class='author']/em/text()").extract()
@@ -47,12 +51,24 @@ class LoginSpider(BaseSpider):
             if title_row and author and date:
                 title_row[0].encode('utf-8')
                 #print title_row[0], author[0], date[0], link[0]
-                print self.extract_title_row(title_row[0])
+                #print self.extract_title_row(title_row[0])
+               
+                (item['title'],\
+                 item['first_episode'],\
+                 item['last_episode']) = self.extract_title_row(title_row[0])
+                item['datePosted'] = date[0]
+                item['url'] = link[0]
+                if item['title']:
+                    print item
+                    item.save()
                 threads.append(Request(url = URL_BASE + link[0], callback = self.parseThreads))
 
         return threads[0]
 
     def extract_title_row(self, row):
+        """
+            Return: title, first_episode, last_episode
+        """
         # match:
         # [更新第2集] (高清翡翠台) 《倩女喜相逢》- 第1~2集 [HDTV-DIVX+HDTV-RMVB480P+HDTV-RMVB720P][粵語中字]
         whyhung1 = re.compile(r'\[更新第(\d+)集.*?\]\s*\(.+?\)\s*《(.+?)》\s*-\s*第(\d+)~(\d+)集')
@@ -73,31 +89,33 @@ class LoginSpider(BaseSpider):
         row = row.encode('utf8')
         m = whyhung1.search(row)
         if m:
-            title = m.group(2)
+            title = m.group(2).decode('utf-8')
             first_episode = int(m.group(3))
             last_episode = int(m.group(4))
             return title, first_episode, last_episode
 
         m = whyhung2.search(row)
         if m:
-            title = m.group(3)
+            title = m.group(3).decode('utf-8')
             first_episode = int(m.group(4))
             last_episode = int(m.group(5))
             return title, first_episode, last_episode
 
         m = whyhung3.search(row)
         if m:
-            title = m.group(3)
+            title = m.group(3).decode('utf-8')
             first_episode = int(m.group(4))
             last_episode = int(m.group(5))
             return title, first_episode, last_episode
 
         m = jacky1.search(row)
         if m:
-            title = m.group(3)
+            title = m.group(3).decode('utf-8')
             first_episode = int(m.group(4))
             last_episode = int(m.group(5))
             return title, first_episode, last_episode
+
+        return None, None, None
 
     def parseThreads(self, response):
         open('forumthread', 'wb').write(response.body)

@@ -1,5 +1,6 @@
 env
 *.pyc
 *.swp
+*.swo
 forum-8-1
 forumthread
