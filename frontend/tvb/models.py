@@ -9,6 +9,10 @@ class Forum81Item(models.Model):
     title = models.CharField(max_length=200)
     datePosted = models.DateTimeField()
     url = models.URLField()
+    subscribe = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return self.title
 
 class ThreadItem(models.Model):
     forumItem = models.ForeignKey(Forum81Item)
@@ -16,4 +20,7 @@ class ThreadItem(models.Model):
     title = models.CharField(max_length=200)
     episode = models.IntegerField()
     torrent = models.CharField(max_length=1000)
+    downloaded = models.BooleanField(default=False)
     
+    def __unicode__(self):
+        return self.title

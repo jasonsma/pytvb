@@ -4,6 +4,9 @@ from scrapy.http import FormRequest, Request
 from scrapy.selector import Selector
 
 from pytvb.items import Scrapy81Item, ScrapyThreadItem
+from tvb.models import Forum81Item
+import django
+from django.forms.models import model_to_dict
 
 import re
 
@@ -15,6 +18,7 @@ class LoginSpider(BaseSpider):
     start_urls = ['http://www.tvboxnow.com/logging.php?action=login']
 
     def parse(self, response):
+        django.setup()
         return FormRequest.from_response(response,
                 formdata={'username': 'tvbgetter', 'password': 'abc123'},
                 callback=self.after_login)
@@ -32,36 +36,39 @@ class LoginSpider(BaseSpider):
 
     def parse81(self, response):
         open('forum-8-1', 'wb').write(response.body)
-        d = open('debug', 'w')
-        #xpath_row = "//table[@class='datatable']/tbody[@id]/tr"
-        #xpath_title = "//table[@class='datatable']/tbody[@id]/tr/th[@class='subject hot']/span[@id]/a/text()"
-        #xpath_author ="//table[@class='datatable']/tbody[@id]/tr/td[@class='author']/cite/a/text()"
-        #xpath_date = "//table[@class='datatable']/tbody[@id]/tr/td[@class='author']/em"
 
         entries = response.xpath("//table[@class='datatable']/tbody[@id]/tr")
         threads = []
         for entry in entries:
-            #import pdb
-            #pdb.set_trace()
-            item = Scrapy81Item()
+            item = Forum81Item()
             title_row = entry.xpath("th[@class='subject hot']/span[@id]/a/text()").extract()
             author = entry.xpath("td[@class='author']/cite/a/text()").extract()
             date = entry.xpath("td[@class='author']/em/text()").extract()
             link = entry.xpath("th[@class='subject hot']/span[@id]/a/@href").extract()
             if title_row and author and date:
                 title_row[0].encode('utf-8')
-                #print title_row[0], author[0], date[0], link[0]
-                #print self.extract_title_row(title_row[0])
                
-                (item['title'],\
-                 item['first_episode'],\
-                 item['last_episode']) = self.extract_title_row(title_row[0])
-                item['datePosted'] = date[0]
-                item['url'] = link[0]
-                if item['title']:
+                (item.title,\
+                 item.first_episode,\
+                 item.last_episode) = self.extract_title_row(title_row[0])
+                item.datePosted = date[0]
+                item.url = link[0]
+                item.author = author[0]
+                if item.title:
+                    try:
+                        f81i = Forum81Item.objects.get(title=item.title,
+                                                       author=item.author,
+                                                       datePosted=item.datePosted)
+                        Forum81Item.objects.filter(
+                                title=item.title,
+                                author=item.author,
+                                datePosted=item.datePosted).update(
+                                                    last_episode=item.last_episode)
+                    except Forum81Item.DoesNotExist:
+                        item.save()
                     print item
-                    item.save()
-                threads.append(Request(url = URL_BASE + link[0], callback = self.parseThreads))
+                    threads.append(Request(url = URL_BASE + link[0],
+                                       callback = self.parseThreads))
 
         return threads[0]
 

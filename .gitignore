@@ -4,3 +4,5 @@ env
 *.swo
 forum-8-1
 forumthread
+frontend/db.sqlite3
+frontend/tvb/migrations
