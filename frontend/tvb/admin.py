@@ -2,7 +2,13 @@ from django.contrib import admin
 from tvb.models import Forum81Item, ThreadItem
 
 class Forum81ItemAdmin(admin.ModelAdmin):
-    list_display = ('subscribe_link', 'title', 'author', 'datePosted', 'first_episode', 'last_episode')
+    list_display = ('subscribe_link',
+                    'title',
+                    'author',
+                    'first_episode',
+                    'last_episode',
+                    'episodes_downloaded',
+                    'datePosted',)
     ordering = ['-datePosted']
     actions = None
     list_display_links = None

@@ -10,6 +10,7 @@ class Forum81Item(models.Model):
     datePosted = models.DateTimeField()
     url = models.URLField()
     subscribe = models.BooleanField(default=False)
+    episodes_downloaded = models.IntegerField(default=0)
 
     def __unicode__(self):
         return self.title
