@@ -54,7 +54,7 @@ class LoginSpider(BaseSpider):
                 item.datePosted = date[0]
                 item.url = link[0]
                 item.author = author[0]
-                if item.title:
+                if item.title and item.author == 'whyhung':
                     try:
                         f81i = Forum81Item.objects.get(title=item.title,
                                                        author=item.author,
@@ -70,10 +70,10 @@ class LoginSpider(BaseSpider):
                         item.save()
                         print "New item"
                         print item
-                    threads.append(Request(url = URL_BASE + link[0],
-                                       callback = self.parseThreads))
+                    #threads.append(Request(url = URL_BASE + link[0],
+                    #                   callback = self.parseThreads))
 
-        return threads[0]
+        return None
 
     def extract_title_row(self, row):
         """
@@ -129,12 +129,23 @@ class LoginSpider(BaseSpider):
 
     def parseThreads(self, response):
         open('forumthread', 'wb').write(response.body)
-        links = response.xpath("//span[@id]/a")
-        #print "parsing %s\n" % response.url
+        print "parsing %s\n" % response.url
+        import pdb
+        pdb.set_trace()
+
+        lines = response.body.split('\n')
+        for line in lines:
+            if re.search('\.torrent', line):
+                m = re.search('a href=\"(.*?)\"', line)
+                if m:
+                    attach = m.group(1)
+                    break
+
+
         for link in links:
             title = link.xpath('strong/text()').extract()
             href = link.xpath('@href').extract()
             if title and href:
                 title[0].encode('utf-8')
-                #print title[0], href[0]
+                print title[0], href[0]
         return None
