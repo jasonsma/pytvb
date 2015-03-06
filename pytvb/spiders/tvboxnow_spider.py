@@ -64,9 +64,12 @@ class LoginSpider(BaseSpider):
                                 author=item.author,
                                 datePosted=item.datePosted).update(
                                                     last_episode=item.last_episode)
+                        print "Updated %s to episode %d" %\
+                            (item.title.encode('utf-8'), item.last_episode)
                     except Forum81Item.DoesNotExist:
                         item.save()
-                    print item
+                        print "New item"
+                        print item
                     threads.append(Request(url = URL_BASE + link[0],
                                        callback = self.parseThreads))
 
