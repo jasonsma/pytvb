@@ -98,21 +98,21 @@ class LoginSpider(BaseSpider):
 
         row = row.encode('utf8')
         m = whyhung1.search(row)
-        if m:
+        if m and 'ATV' not in row:
             title = m.group(2).decode('utf-8')
             first_episode = int(m.group(3))
             last_episode = int(m.group(4))
             return title, first_episode, last_episode
 
         m = whyhung2.search(row)
-        if m:
+        if m and 'ATV' not in row:
             title = m.group(3).decode('utf-8')
             first_episode = int(m.group(4))
             last_episode = int(m.group(5))
             return title, first_episode, last_episode
 
         m = whyhung3.search(row)
-        if m:
+        if m and 'ATV' not in row:
             title = m.group(3).decode('utf-8')
             first_episode = int(m.group(4))
             last_episode = int(m.group(5))
