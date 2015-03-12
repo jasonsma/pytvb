@@ -8,7 +8,7 @@ class Forum81Item(models.Model):
     author = models.CharField(max_length=100)
     title = models.CharField(max_length=200)
     datePosted = models.DateTimeField()
-    url = models.URLField()
+    url = models.CharField(max_length=100)
     subscribe = models.BooleanField(default=False)
     episodes_downloaded = models.IntegerField(default=0)
 
