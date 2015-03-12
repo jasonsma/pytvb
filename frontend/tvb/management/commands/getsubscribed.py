@@ -4,6 +4,7 @@ from tvb.models import Forum81Item
 
 import requests
 import re
+import os
 from datetime import date
 
 class DidntWork(Exception):
@@ -19,6 +20,8 @@ class Command(BaseCommand):
             if (item.last_episode - item.first_episode + 1) > item.episodes_downloaded:
                 try:
                     self.getEpisode(item.url, item.first_episode + item.episodes_downloaded)
+                    item.episodes_downloaded += 1
+                    item.save()
                 except:
                     #email me
                     print "getEpisode didn't work"
@@ -69,7 +72,10 @@ class Command(BaseCommand):
         misc = res.url
         res = session.get('http://www.tvboxnow.com/%s' % attach2,
                             headers={'referer':misc}, stream=True)
-        with open("%s-%d.torrent" % (thread, episode), "wb") as f:
+        filepath = "%s-%d.torrent" % (thread, episode)
+        if os.environ.get("TVBDIR"):
+            filepath = os.environ.get("TVBDIR") + "/" + filepath
+        with open(filepath, "wb") as f:
            for chunk in res.iter_content():
              f.write(chunk)
 

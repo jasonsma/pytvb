@@ -11,7 +11,7 @@ class Forum81ItemAdmin(admin.ModelAdmin):
                     'datePosted',)
     ordering = ['-datePosted']
     actions = None
-    list_display_links = None
+    list_display_links = ['title']
 
     def subscribe_link(self, obj):
         if obj.subscribe:
